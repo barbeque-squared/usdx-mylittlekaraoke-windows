@@ -27,6 +27,7 @@ uses UWebSDK
     ,classes
     ,fphttpclient
     ,fpjson
+    ,opensslsockets
 ;
 
 procedure WebsiteInfo (var Info: TWebsiteInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -45,7 +46,7 @@ begin
     Add('score', Inttostr(SendInfo.ScoreInt));
     Add('scoreline', Inttostr(SendInfo.ScoreLineInt));
     Add('scoregolden', Inttostr(SendInfo.ScoreGoldenInt));
-    Add('song', SendInfo.MD5Song);
+    Add('song', AnsiString(SendInfo.MD5Song));
     Add('level', Inttostr(SendInfo.Level));
     Result := AsJSON;
     Free;
@@ -72,7 +73,11 @@ begin
   With TFPHttpClient.Create(Nil) do try
       RequestBody := TStringStream.Create(SendInfoToJson(SendInfo));
       AddHeader('Content-Type','application/json');
-      Result := StrToInt(Post(url));
+      try
+        Result := StrToInt(Post(url));
+      except on E: Exception do
+        WriteLn('An error occured in the My Little Karaoke plugin: ' + E.Message);
+      end;
       if ResponseStatusCode <> 200 then
         Result := 4;
       Free;
@@ -127,8 +132,12 @@ begin
       AppendStr(url, '?level=');
       AppendStr(url, Inttostr(Level));
       AddHeader('Content-Type','text/plain');
-      RequestBody := TStringStream.Create(ListMD5Song);
-      Result := widestring(Post(url));
+      RequestBody := TStringStream.Create(AnsiString(ListMD5Song));
+		  try
+        Result := widestring(Post(url));
+      except on E: Exception do
+        WriteLn('An error occured in the My Little Karaoke plugin: ' + E.Message);
+      end;
       if ResponseStatusCode <> 200 then
         Result := widestring('0');
       Free;
@@ -138,5 +147,12 @@ begin
     end;
 end;
 exports DownloadScore;
+
+
+function VerifySong (MD5Song: widestring): widestring; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+begin
+  Result := widestring('s');
+end;
+exports VerifySong;
 
 end.

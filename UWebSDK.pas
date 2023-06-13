@@ -14,7 +14,7 @@ type
   end;
 
   TSendInfo = record
-      Username:   UTF8String;   // Username
+      Username:   UTF8String;   // Username & name of the player
       Password:   UTF8String;   // Password
       ScoreInt:       integer;  // Player's Score Int
       ScoreLineInt:   integer;  // Player's Score Line
@@ -44,6 +44,9 @@ type
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
   fModi_DownloadScore = function (ListMD5Song: widestring; Level: byte): widestring;
+  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+
+  fModi_VerifySong = function (MD5Song: widestring): widestring;
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 implementation
